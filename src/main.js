@@ -4,8 +4,8 @@ import App from './App.purs';
 // @see https://webpack.js.org/guides/hot-module-replacement/
 const onReload = () => {
   App.main({
-    liftEffect: (a) => a(),
-  });
+    liftEffect: a => a(),
+  })();
 };
 
 if (module.hot) {

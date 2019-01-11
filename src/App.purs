@@ -2,9 +2,9 @@ module App where
 
 import Prelude
 
-import Effect (Effect)
+import Effect.Class (class MonadEffect)
 import Effect.Class.Console (log)
 
-main :: Effect Unit
-main = do
-  log "Hello World"
+main :: forall a b. MonadEffect b => a -> b Unit
+main time = do
+  log "Hello World!!!"
