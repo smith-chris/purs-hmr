@@ -53,7 +53,7 @@ initialState = {
     },
     func: {
       data: {
-        x: 20.0,
+        x: 1.0,
         y: 3.0
       },
       time: 0.0
