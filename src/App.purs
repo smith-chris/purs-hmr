@@ -2,6 +2,7 @@ module App where
 
 import Prelude
 
+import Data.Either
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console (log)
 
@@ -54,16 +55,16 @@ initialState = {
   }
 }
 
-getComputedPosition :: State -> Number -> Point
+getComputedPosition :: State -> Number -> Either String Point
 getComputedPosition ({position: {value: v, func: f}}) time = 
-  if timePassed > 0.0 
-    then v
+  if timePassed < 0.0 
+    then Left $ "Warning: timePassed(" <> show timePassed <> ") cannot be less than zero"
     else 
-      applyPointValue v f.data time
+      Right $ applyPointValue v f.data time
   where
     timePassed = time - f.time
 
-newPosition :: Point
+newPosition :: Either String Point
 newPosition = getComputedPosition initialState 20.0
 
 data Shape
@@ -83,4 +84,6 @@ myCircle = Circle ({x: 0.0, y: 0.0}) 10.0
 
 main :: forall a b. MonadEffect b => a -> b Unit
 main time = do
-  log $ showPoint newPosition
+  log case newPosition of
+    Left message -> show message
+    Right position -> showPoint position
