@@ -35,7 +35,13 @@ applyPointValue v d t = {x: x, y: y}
     y = applyValue v.y d.y t
 
 type State = {
-  position :: Field Point
+  position :: Field Point,
+  dummyField :: Number
+}
+
+type OutState = {
+  position :: Point,
+  dummyField :: Number
 }
 
 initialState :: State
@@ -52,7 +58,8 @@ initialState = {
       },
       time: 0.0
     }
-  }
+  },
+  dummyField: 1.0
 }
 
 getComputedPosition :: State -> Number -> Either String Point
@@ -63,9 +70,6 @@ getComputedPosition ({position: {value: v, func: f}}) time =
       Right $ applyPointValue v f.data time
   where
     timePassed = time - f.time
-
-newPosition :: Either String Point
-newPosition = getComputedPosition initialState 20.0
 
 data Shape
   = Circle Point Number
@@ -82,8 +86,9 @@ showShape (Rectangle p w h) = "Reactangle at position " <> showPoint p <> " with
 myCircle :: Shape
 myCircle = Circle ({x: 0.0, y: 0.0}) 10.0
 
-main :: forall a b. MonadEffect b => a -> b Unit
-main time = do
-  log case newPosition of
-    Left message -> show message
-    Right position -> showPoint position
+main :: Number -> Either String OutState
+main time = case position of 
+    Left message -> Left message
+    Right pos -> Right initialState { position = pos }
+  where
+    position = getComputedPosition initialState time
