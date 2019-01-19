@@ -1,25 +1,40 @@
-const path = require('path');
+const path = require('path')
 
 const {
   DefinePlugin,
   NoEmitOnErrorsPlugin,
   HotModuleReplacementPlugin,
-} = require('webpack');
+} = require('webpack')
 
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import NamedModulesPlugin from 'webpack/lib/NamedModulesPlugin';
-import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import NamedModulesPlugin from 'webpack/lib/NamedModulesPlugin'
+import UglifyJsPlugin from 'uglifyjs-webpack-plugin'
 
-const nodeEnv = process.env.NODE_ENV || 'development';
-const isProd = nodeEnv === 'production';
+const nodeEnv = process.env.NODE_ENV || 'development'
+const isProd = nodeEnv === 'production'
+const isDev = process.argv.indexOf('-p') === -1
 
 const paths = {
   src: path.join(__dirname, '/src/'),
   output: path.join(__dirname, '/dist/'),
   public: '/',
-};
+}
 
-console.log('production build: ', isProd);
+let urlLoaderOptions = Object.assign(
+  {
+    limit: 16 * 1024,
+  },
+  isDev
+    ? {
+        // use full path in development for better readability
+        name: '[path][name].[ext]',
+      }
+    : {
+        outputPath: 'assets/',
+      }
+)
+
+console.log('production build: ', isProd)
 
 module.exports = {
   devtool: isProd ? 'nosources-source-map' : 'cheap-module-eval-source-map',
@@ -78,6 +93,16 @@ module.exports = {
         loader: 'babel-loader',
       },
       {
+        test: /\.(png|jpg|jpeg|gif)$/,
+        include: path.resolve('./src/assets'),
+        use: [
+          {
+            loader: 'sizeof-loader',
+            options: urlLoaderOptions,
+          },
+        ],
+      },
+      {
         test: /\.purs$/,
         loader: 'purs-loader',
         exclude: /node_modules/,
@@ -106,4 +131,4 @@ module.exports = {
     },
     stats: 'minimal',
   },
-};
+}
