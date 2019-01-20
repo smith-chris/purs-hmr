@@ -1,9 +1,6 @@
 module App where
 
 import Prelude
-
-import Effect.Class (class MonadEffect)
-import Effect.Class.Console (log)
 import Math (abs)
 
 data Tuple a b = Tuple a b
@@ -83,12 +80,17 @@ setPositionData :: State -> Time -> (Point -> Point) -> State
 setPositionData s t getData =
   s {position = updatePointField s.position (getData s.position.func.data) t}
 
+getNewData :: Action -> Point -> Point
+getNewData = case _ of
+  Bounce N -> (\d -> d {y = abs d.y})
+  Bounce S -> (\d -> d {y = -abs d.y})
+  Bounce E -> (\d -> d {x = -abs d.x})
+  Bounce W -> (\d -> d {x = abs d.x})
+  _ -> (\d -> d)
+
 update :: State -> Action -> Time -> State
 update state action time = case action of
-  Bounce N -> setPositionData state time (\d -> d {y = abs d.y})
-  Bounce S -> setPositionData state time (\d -> d {y = -abs d.y})
-  Bounce E -> setPositionData state time (\d -> d {x = -abs d.x})
-  Bounce W -> setPositionData state time (\d -> d {x = abs d.x})
+  Bounce _ -> setPositionData state time (getNewData action)
   _ -> state
 
 getComputedPosition :: State -> Time -> Point
@@ -103,8 +105,6 @@ getComputedPosition ({position: {value: v, func: f}}) time =
 showPoint :: Point -> String
 showPoint ({x: x, y: y}) =
   "(" <> show x <> ", " <> show y<> ")"
-
-data Output = Output OutState Action
 
 errorPoint :: Point
 errorPoint = {x: -1.0, y: -1.0}
