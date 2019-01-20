@@ -25,7 +25,8 @@
     "purescript-console": "^4.1.0",
     "purescript-effect": "^2.0.0",
     "purescript-either": "^4.1.1",
-    "purescript-tuples": "^5.1.0"
+    "purescript-tuples": "^5.1.0",
+    "purescript-math": "^2.1.1"
   },
   "devDependencies": {}
 }

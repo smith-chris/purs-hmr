@@ -1,6 +1,8 @@
 import App from './App.purs';
 import { Application } from 'pixi.js';
 
+const json = o => JSON.stringify(o, null, 2);
+
 const app = new Application(128, 128, { backgroundColor: 0x1099bb });
 document.body.appendChild(app.view);
 
@@ -21,7 +23,7 @@ app.ticker.add(function(delta) {
   timePassed += delta;
   let { value0: newState, value1: outState } = App.main(state)(timePassed);
   if (state !== newState) {
-    console.log('state change');
+    console.log('state change', timePassed, json(state), 'new state:', json(newState));
     state = newState;
   }
   bunny.x = outState.position.x;
