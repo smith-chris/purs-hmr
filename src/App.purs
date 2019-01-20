@@ -4,6 +4,7 @@ import Prelude
 
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console (log)
+import Math (abs)
 
 data Tuple a b = Tuple a b
 
@@ -57,7 +58,7 @@ initialState = {
     func: {
       data: {
         x: 15.0,
-        y: 3.0
+        y: 2.0
       },
       time: 0.0
     }
@@ -87,7 +88,8 @@ setPositionData s t getData =
 
 update :: State -> Action -> Time -> State
 update state action time = case action of
-  Bounce E -> setPositionData state time (\d -> d {x = -d.x})
+  Bounce E -> setPositionData state time (\d -> d {x = -abs d.x})
+  Bounce W -> setPositionData state time (\d -> d {x = abs d.x})
   _ -> state
 
 getComputedPosition :: State -> Time -> Point
@@ -122,8 +124,10 @@ main state time = Tuple newState outState
     newState = update state action time
 
 getAction :: OutState -> Action
-getAction state =
-  if state.position.x >= 60.0
+getAction state = 
+  if state.position.x >= 128.0
     then Bounce E
+  else if state.position.x <= 0.0
+    then Bounce W
   else 
     Nothing
