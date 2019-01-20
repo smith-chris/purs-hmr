@@ -2,9 +2,10 @@ module App where
 
 import Prelude
 
-import Data.Either
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console (log)
+
+data Tuple a b = Tuple a b
 
 type Point ={ 
   x :: Number, 
@@ -53,7 +54,7 @@ initialState = {
     },
     func: {
       data: {
-        x: 1.0,
+        x: 15.0,
         y: 3.0
       },
       time: 0.0
@@ -62,33 +63,49 @@ initialState = {
   dummyField: 1.0
 }
 
-getComputedPosition :: State -> Number -> Either String Point
+data Direction = N | E | W | S
+
+data Action = Bounce Direction | Nothing
+
+update :: State -> Action -> State
+update state action = case action of
+  Bounce S -> state {dummyField = 5.0}
+  _ -> state
+
+getComputedPosition :: State -> Number -> Point
 getComputedPosition ({position: {value: v, func: f}}) time = 
-  if timePassed < 0.0 
-    then Left $ "Warning: timePassed(" <> show timePassed <> ") cannot be less than zero"
+  if timePassed >= 0.0 
+    then applyPointValue v f.data time
     else 
-      Right $ applyPointValue v f.data time
+      v
   where
     timePassed = time - f.time
-
-data Shape
-  = Circle Point Number
-  | Rectangle Point Number Number
 
 showPoint :: Point -> String
 showPoint ({x: x, y: y}) =
   "(" <> show x <> ", " <> show y<> ")"
 
-showShape :: Shape -> String
-showShape (Circle c r) = "Circle with centre of " <> showPoint c <> ", and radius of " <> show r
-showShape (Rectangle p w h) = "Reactangle at position " <> showPoint p <> " with width of " <> show w <> "and height of " <> show h
+data Output = Output OutState Action
 
-myCircle :: Shape
-myCircle = Circle ({x: 0.0, y: 0.0}) 10.0
+errorPoint :: Point
+errorPoint = {x: -1.0, y: -1.0}
 
-main :: Number -> Either String OutState
-main time = case position of 
-    Left message -> Left message
-    Right pos -> Right initialState { position = pos }
+getOutState :: State -> Number -> OutState
+getOutState state time = 
+    state { position = position }
   where
-    position = getComputedPosition initialState time
+    position = getComputedPosition state time
+
+main :: State -> Number -> Tuple State OutState
+main state time = Tuple newState outState
+  where
+    outState = getOutState state time
+    action = getAction outState
+    newState = update state action
+
+getAction :: OutState -> Action
+getAction state =
+  if state.position.x >= 50.0
+    then Bounce S
+  else 
+    Nothing
