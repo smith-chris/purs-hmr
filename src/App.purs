@@ -57,8 +57,8 @@ initialState = {
     },
     func: {
       data: {
-        x: 15.0,
-        y: 2.0
+        x: 20.0,
+        y: 13.0
       },
       time: 0.0
     }
@@ -79,15 +79,14 @@ updatePointField f d t =
   {func: (f.func {data = d, time = t}), value: (applyPointValue f.value f.func.data (t - f.func.time))}
 
 
--- let getNewPointField (field: Field<Point>) (data: Point) (time: float) : Field<Point> =
---   {field with func = {data = data; time = time}; value = (applyPointValue field.value field.func.data (time - field.func.time))}
-
 setPositionData :: State -> Time -> (Point -> Point) -> State
 setPositionData s t getData =
   s {position = updatePointField s.position (getData s.position.func.data) t}
 
 update :: State -> Action -> Time -> State
 update state action time = case action of
+  Bounce N -> setPositionData state time (\d -> d {y = abs d.y})
+  Bounce S -> setPositionData state time (\d -> d {y = -abs d.y})
   Bounce E -> setPositionData state time (\d -> d {x = -abs d.x})
   Bounce W -> setPositionData state time (\d -> d {x = abs d.x})
   _ -> state
@@ -123,11 +122,14 @@ main state time = Tuple newState outState
     action = getAction outState
     newState = update state action time
 
+
+bounceScreen :: Point -> Action
+bounceScreen ({ x: x }) | x >= 128.0 = Bounce E
+bounceScreen ({ x: x }) | x <= 0.0 = Bounce W
+bounceScreen ({ y: y }) | y >= 128.0 = Bounce S
+bounceScreen ({ y: y }) | y <= 0.0 = Bounce N
+bounceScreen _ = Nothing
+
+
 getAction :: OutState -> Action
-getAction state = 
-  if state.position.x >= 128.0
-    then Bounce E
-  else if state.position.x <= 0.0
-    then Bounce W
-  else 
-    Nothing
+getAction state = bounceScreen state.position
